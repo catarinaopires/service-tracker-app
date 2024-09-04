@@ -39,3 +39,13 @@ yarn-error.*
 
 expo-env.d.ts
 # @end expo-cli
+
+# Android
+android/
+
+# iOS
+ios/
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
