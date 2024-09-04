@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import {
-  StyleSheet,
-  KeyboardAvoidingView,
-  TextInput,
-  Text,
-  View,
-  Image,
   ActivityIndicator,
-  ScrollView,
+  Image,
+  KeyboardAvoidingView,
   Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
 } from "react-native";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -21,8 +21,18 @@ export default function Index() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const withEmptyFields = () => {
+    if (!email || !password) {
+      alert("Please fill in all fields");
+      return true;
+    }
+    return false;
+  };
+
   const signUp = async () => {
     setLoading(true);
+
+    if (withEmptyFields()) return;
 
     await auth()
       .createUserWithEmailAndPassword(email, password)
@@ -40,6 +50,8 @@ export default function Index() {
 
   const signIn = async () => {
     setLoading(true);
+
+    if (withEmptyFields()) return;
 
     await auth()
       .signInWithEmailAndPassword(email, password)
