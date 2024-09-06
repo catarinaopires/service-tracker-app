@@ -14,16 +14,15 @@ function getServicesRef() {
 }
 
 async function getServices(userUID) {
-  const servicesRef = getServicesRef().where("userID", "==", userUID);
-  const snapshot = await getDocs(servicesRef);
+  const querySnapshot = query(getServicesRef(), where("userID", "==", userUID));
+
+  const snapshot = await getDocs(querySnapshot);
   return snapshot.docs.map((doc) => doc.data());
 }
 
 async function getUpcomingService(userUID) {
-  const servicesRef = getServicesRef();
-
   const querySnapshot = query(
-    servicesRef,
+    getServicesRef(),
     where("userID", "==", userUID),
     where("beginTime", ">", new Date()),
     orderBy("beginTime", "desc"),
