@@ -11,7 +11,7 @@ import {
   Text,
   TouchableOpacity,
   useColorScheme,
-  View
+  View,
 } from "react-native";
 
 type Service = {
@@ -105,9 +105,6 @@ const AgendaItem = (props: ItemProps) => {
 
 const styles = (colorScheme: ColorSchemeName) => {
   const scheme = colorScheme ?? "light";
-
-  console.log("scheme: ", scheme);
-  console.log("Colors: ", Colors[scheme]);
 
   return StyleSheet.create({
     item: {

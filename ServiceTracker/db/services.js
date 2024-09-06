@@ -1,10 +1,10 @@
 import {
-  collection,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  where,
+    collection,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+    where,
 } from "firebase/firestore";
 
 import DATABASE from "./firebaseConfig";
@@ -35,3 +35,4 @@ async function getUpcomingService(userUID) {
 }
 
 export { getServices, getUpcomingService };
+
