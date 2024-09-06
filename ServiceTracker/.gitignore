@@ -49,3 +49,6 @@ ios/
 # Firebase
 google-services.json
 GoogleService-Info.plist
+
+# Environment variables
+.env
