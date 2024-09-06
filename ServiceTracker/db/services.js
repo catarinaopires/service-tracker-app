@@ -1,4 +1,11 @@
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 
 import DATABASE from "./firebaseConfig";
 
@@ -12,4 +19,20 @@ async function getServices(userUID) {
   return snapshot.docs.map((doc) => doc.data());
 }
 
-export { getServices };
+async function getUpcomingService(userUID) {
+  const servicesRef = getServicesRef();
+
+  const querySnapshot = query(
+    servicesRef,
+    where("userID", "==", userUID),
+    where("beginTime", ">", new Date()),
+    orderBy("beginTime", "desc"),
+    limit(1)
+  );
+
+  const snapshot = await getDocs(querySnapshot);
+
+  return snapshot.docs.map((doc) => doc.data());
+}
+
+export { getServices, getUpcomingService };
