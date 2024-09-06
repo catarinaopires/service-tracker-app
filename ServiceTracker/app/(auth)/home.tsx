@@ -1,14 +1,27 @@
-import { View, Text, Button } from "react-native";
+import { View, Text, Button, StyleSheet, useColorScheme, ColorSchemeName } from "react-native";
 import auth from "@react-native-firebase/auth";
+import { Colors } from "@/constants/Colors";
 
 const Home = () => {
+  const colorScheme: ColorSchemeName = useColorScheme() ?? "light";
+  
   const user = auth().currentUser;
   return (
-    <View>
+    <View style={styles(colorScheme).container}>
       <Text>Welcome {user?.email}</Text>
       <Button title="Sign out" onPress={() => auth().signOut()} />
     </View>
   );
+};
+
+const styles = (colorScheme: ColorSchemeName) => {
+  const scheme = colorScheme ?? "light";
+
+  return StyleSheet.create({
+  container: {
+    backgroundColor: Colors[scheme].background,
+  },
+});
 };
 
 export default Home;
