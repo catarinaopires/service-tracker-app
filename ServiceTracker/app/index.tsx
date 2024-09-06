@@ -10,8 +10,10 @@ import {
   Text,
   TextInput,
   useColorScheme,
-  View,
+  View
 } from "react-native";
+
+import Snackbar, { SnackbarAction } from "react-native-snackbar";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
@@ -26,9 +28,32 @@ export default function Index() {
 
   const colorScheme: ColorSchemeName = useColorScheme() ?? "light";
 
+  const showSnackbar = (
+    message: string,
+    isErrorMessage: boolean = false,
+    action?: SnackbarAction
+  ) => {
+    return Snackbar.show({
+      text: message,
+      backgroundColor: isErrorMessage
+        ? Colors[colorScheme].errorContainer
+        : Colors[colorScheme].inverseSurface,
+      textColor: isErrorMessage
+        ? Colors[colorScheme].onErrorContainer
+        : Colors[colorScheme].inverseOnSurface,
+      action: action ?? {
+        text: "DISMISS",
+        textColor: isErrorMessage
+          ? Colors[colorScheme].error
+          : Colors[colorScheme].inversePrimary,
+        onPress: () => Snackbar.dismiss(),
+      },
+    });
+  };
+
   const withEmptyFields = () => {
     if (!email || !password) {
-      alert("Please fill in all fields.");
+      showSnackbar("Please fill in all fields.", true);
       return true;
     }
     return false;
@@ -37,16 +62,19 @@ export default function Index() {
   const signUp = async () => {
     setLoading(true);
 
-    if (withEmptyFields()) return;
+    if (withEmptyFields()) {
+      setLoading(false);
+      return;
+    }
 
     await auth()
       .createUserWithEmailAndPassword(email, password)
       .then(() => {
-        console.log("User account created & signed in!");
+        showSnackbar("User account created & signed in!");
       })
       .catch((e) => {
         const error = e as FirebaseError;
-        alert("Registration failed: " + error.message);
+        showSnackbar("Registration failed: " + error.message, true);
       })
       .finally(() => {
         setLoading(false);
@@ -56,16 +84,19 @@ export default function Index() {
   const signIn = async () => {
     setLoading(true);
 
-    if (withEmptyFields()) return;
+    if (withEmptyFields()) {
+      setLoading(false);
+      return;
+    }
 
     await auth()
       .signInWithEmailAndPassword(email, password)
       .then(() => {
-        alert("User signed in!");
+        showSnackbar("User signed in!");
       })
       .catch((e) => {
         const error = e as FirebaseError;
-        alert("Sign in failed: " + error.message);
+        showSnackbar("Sign in failed: " + error.message, true);
       })
       .finally(() => {
         setLoading(false);
