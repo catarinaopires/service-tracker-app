@@ -1,8 +1,10 @@
 import { Colors } from "@/constants/Colors";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import auth from "@react-native-firebase/auth";
 import { Tabs } from "expo-router";
 import React from "react";
 import { StyleSheet, useColorScheme } from "react-native";
+import Snackbar from "react-native-snackbar";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme() ?? "light";
@@ -18,13 +20,34 @@ export default function TabLayout() {
         headerTintColor: Colors[colorScheme].onSurface,
         headerStyle: {
           backgroundColor: Colors[colorScheme].surface,
-        },       
+        },
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
           title: "Home",
+          headerRight: () => (
+            <Ionicons
+              name="log-out-outline"
+              color={Colors[colorScheme].primary}
+              size={28}
+              style={{ marginRight: 10 }}
+              onPress={() => {
+                auth().signOut();
+                Snackbar.show({
+                  text: "Signed out!",
+                  backgroundColor: Colors[colorScheme].inverseSurface,
+                  textColor: Colors[colorScheme].inverseOnSurface,
+                  action: {
+                    text: "DISMISS",
+                    textColor: Colors[colorScheme].inversePrimary,
+                    onPress: () => Snackbar.dismiss(),
+                  },
+                });
+              }}
+            />
+          ),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "home" : "home-outline"}

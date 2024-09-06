@@ -9,7 +9,6 @@ const Home = () => {
   return (
     <View style={styles(colorScheme).container}>
       <Text>Welcome {user?.email}</Text>
-      <Button title="Sign out" onPress={() => auth().signOut()} />
     </View>
   );
 };
