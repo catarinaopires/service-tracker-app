@@ -11,15 +11,16 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      sceneContainerStyle={{ backgroundColor: Colors[colorScheme].background }}
       initialRouteName="home"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].primary,
-        tabBarInactiveTintColor: Colors[colorScheme].onSurface,
-        tabBarActiveBackgroundColor: Colors[colorScheme].surface,
-        tabBarInactiveBackgroundColor: Colors[colorScheme].surface,
-        headerTintColor: Colors[colorScheme].onSurface,
+        tabBarInactiveTintColor: Colors[colorScheme].onSurfaceVariant,
+        tabBarActiveBackgroundColor: Colors[colorScheme].surfaceVariant,
+        tabBarInactiveBackgroundColor: Colors[colorScheme].surfaceVariant,
+        headerTintColor: Colors[colorScheme].onSurfaceVariant,
         headerStyle: {
-          backgroundColor: Colors[colorScheme].surface,
+          backgroundColor: Colors[colorScheme].surfaceVariant,
         },
       }}
     >
