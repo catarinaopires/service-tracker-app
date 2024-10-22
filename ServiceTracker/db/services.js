@@ -1,10 +1,11 @@
 import {
-    collection,
-    getDocs,
-    limit,
-    orderBy,
-    query,
-    where,
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  where,
+  addDoc,
 } from "firebase/firestore";
 
 import DATABASE from "./firebaseConfig";
@@ -34,5 +35,9 @@ async function getUpcomingService(userUID) {
   return snapshot.docs.map((doc) => doc.data());
 }
 
-export { getServices, getUpcomingService };
+async function addService(userUID, service) {
+  service.userID = userUID;
+  return await addDoc(getServicesRef(), service);
+}
 
+export { getServices, getUpcomingService, addService };
