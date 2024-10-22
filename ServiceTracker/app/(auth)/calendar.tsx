@@ -18,6 +18,7 @@ const NOW_DATE = new Date().toISOString().split("T")[0];
 const CalendarScreen = () => {
   const colorScheme: ColorSchemeName = useColorScheme() ?? "light";
   const [calendarServices, setCalendarServices] = useState<Service[] | []>([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const user = auth().currentUser;
 
@@ -89,6 +90,17 @@ const CalendarScreen = () => {
         theme={getAgendaTheme()}
         showClosingKnob
       />
+
+      <TouchableOpacity
+        style={styles(colorScheme).overlayIconButton}
+        onPress={() => setModalVisible(true)}
+      >
+        <Ionicons
+          name="add"
+          size={40}
+          color={Colors[colorScheme].onSecondary}
+        />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -110,6 +122,19 @@ const styles = (colorScheme: ColorSchemeName) => {
       flex: 1,
       alignItems: "center",
       justifyContent: "center",
+    },
+    overlayIconButton: {
+      borderWidth: 1,
+      borderColor: "rgba(0,0,0,0.2)",
+      alignItems: "center",
+      justifyContent: "center",
+      width: 70,
+      position: "absolute",
+      bottom: 10,
+      right: 10,
+      height: 70,
+      backgroundColor: Colors[scheme].secondary,
+      borderRadius: 100,
     },
   });
 };
