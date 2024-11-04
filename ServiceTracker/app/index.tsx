@@ -135,6 +135,7 @@ export default function Index() {
                 placeholderTextColor={Colors[colorScheme].onSurface}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                cursorColor={Colors[colorScheme].primaryContainer}
               />
             </View>
 
@@ -151,6 +152,7 @@ export default function Index() {
                 placeholder="Password"
                 placeholderTextColor={Colors[colorScheme].onSurface}
                 secureTextEntry
+                cursorColor={Colors[colorScheme].primaryContainer}
               />
             </View>
 
