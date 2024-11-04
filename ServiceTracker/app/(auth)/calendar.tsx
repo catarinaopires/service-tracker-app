@@ -3,6 +3,7 @@ import { Colors } from "@/constants/Colors";
 import { addService, getServices } from "@/db/services";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import auth from "@react-native-firebase/auth";
+import { Stack } from "expo-router";
 import React, { useEffect, useState } from "react";
 import Modal from "react-native-modal";
 import DateTimePicker, { DateType } from "react-native-ui-datepicker";
@@ -42,11 +43,15 @@ const CalendarScreen = () => {
 
   const user = auth().currentUser;
 
-  useEffect(() => {
+  const updateServices = () => {
     console.log("Getting services");
     getServices(user?.uid).then((services) => {
       setCalendarServices(services as Service[]);
     });
+  };
+
+  useEffect(() => {
+    updateServices();
   }, []);
 
   const cancelModal = () => {
@@ -107,9 +112,7 @@ const CalendarScreen = () => {
         setTimeout(() => showSnackbar("Service added!"), 1500);
 
         // Update services
-        getServices(user?.uid).then((services) => {
-          setCalendarServices(services as Service[]);
-        });
+        updateServices();
       })
       .catch((e: FirebaseError) => {
         console.log("Error at adding service!" + e.message);
@@ -356,6 +359,21 @@ const CalendarScreen = () => {
 
   return (
     <SafeAreaView style={styles(colorScheme).container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Ionicons
+              name="refresh"
+              color={Colors[colorScheme].primary}
+              size={28}
+              style={{ marginRight: 10 }}
+              onPress={() => {
+                updateServices();
+              }}
+            />
+          ),
+        }}
+      />
       <Agenda
         key={colorScheme}
         items={formatServices(calendarServices)}
