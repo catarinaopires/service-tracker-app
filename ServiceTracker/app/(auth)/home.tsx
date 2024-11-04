@@ -22,6 +22,7 @@ const Home = () => {
   const user = auth().currentUser;
 
   useEffect(() => {
+    console.log("Getting upcoming service");
     getUpcomingService(user?.uid).then((service) => {
       if (service.length === 0) {
         setUpcomingService(null);
