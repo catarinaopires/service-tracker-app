@@ -4,11 +4,12 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { Colors } from "@/constants/Colors";
 import { getUpcomingService } from "@/db/services";
 import auth from "@react-native-firebase/auth";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   ColorSchemeName,
   Image,
+  RefreshControl,
   StyleSheet,
   Text,
   useColorScheme,
@@ -19,9 +20,11 @@ const Home = () => {
   const colorScheme: ColorSchemeName = useColorScheme() ?? "light";
   const [upcomingService, setUpcomingService] = useState<Service | null>(null);
 
+  const [refreshing, setRefreshing] = useState(false);
+
   const user = auth().currentUser;
 
-  useEffect(() => {
+  const updateUpcomingService = () => {
     console.log("Getting upcoming service");
     getUpcomingService(user?.uid).then((service) => {
       if (service.length === 0) {
@@ -29,11 +32,24 @@ const Home = () => {
         return;
       }
       setUpcomingService(service[0] as Service);
+      setRefreshing(false);
     });
+  };
+
+  useEffect(() => {
+    updateUpcomingService();
+  }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    updateUpcomingService();
   }, []);
 
   return (
     <ParallaxScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
       headerBackgroundColor={Colors[colorScheme].surfaceVariant}
       headerImage={
         <Image
