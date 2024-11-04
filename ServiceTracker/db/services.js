@@ -1,11 +1,11 @@
 import {
+  addDoc,
   collection,
   getDocs,
   limit,
   orderBy,
   query,
   where,
-  addDoc,
 } from "firebase/firestore";
 
 import DATABASE from "./firebaseConfig";
@@ -26,7 +26,7 @@ async function getUpcomingService(userUID) {
     getServicesRef(),
     where("userID", "==", userUID),
     where("beginTime", ">", new Date()),
-    orderBy("beginTime", "desc"),
+    orderBy("beginTime", "asc"),
     limit(1)
   );
 
@@ -40,4 +40,5 @@ async function addService(userUID, service) {
   return await addDoc(getServicesRef(), service);
 }
 
-export { getServices, getUpcomingService, addService };
+export { addService, getServices, getUpcomingService };
+
