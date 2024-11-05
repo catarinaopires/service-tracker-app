@@ -21,18 +21,18 @@ async function getServices(userUID) {
   return snapshot.docs.map((doc) => doc.data());
 }
 
-async function getUpcomingService(userUID) {
-  const querySnapshot = query(
+function getServicesSnapshot(userUID) {
+  return query(getServicesRef(), where("userID", "==", userUID));
+}
+
+function getUpcomingServiceSnapshot(userUID) {
+  return query(
     getServicesRef(),
     where("userID", "==", userUID),
     where("beginTime", ">", new Date()),
     orderBy("beginTime", "asc"),
     limit(1)
   );
-
-  const snapshot = await getDocs(querySnapshot);
-
-  return snapshot.docs.map((doc) => doc.data());
 }
 
 async function addService(userUID, service) {
@@ -40,5 +40,8 @@ async function addService(userUID, service) {
   return await addDoc(getServicesRef(), service);
 }
 
-export { addService, getServices, getUpcomingService };
+export {
+  addService,
+  getServices, getServicesSnapshot, getUpcomingServiceSnapshot
+};
 

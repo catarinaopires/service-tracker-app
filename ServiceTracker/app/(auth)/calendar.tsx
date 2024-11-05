@@ -1,15 +1,16 @@
 import { AgendaItem, Service } from "@/components/AgendaItem";
-import { addService, getServices } from "@/db/services";
+import { addService, getServicesSnapshot } from "@/db/services";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import auth from "@react-native-firebase/auth";
-import { Stack } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";
 import Modal from "react-native-modal";
 import DateTimePicker, { DateType } from "react-native-ui-datepicker";
 
+import { ColorScheme } from "@/constants/Colors";
 import ThemeContext from "@/context/ThemeContext";
 import dayjs from "dayjs";
 import { FirebaseError } from "firebase/app";
+import { onSnapshot, QuerySnapshot } from "firebase/firestore";
 import {
   Pressable,
   SafeAreaView,
@@ -21,7 +22,6 @@ import {
 } from "react-native";
 import { Agenda } from "react-native-calendars";
 import Snackbar, { SnackbarAction } from "react-native-snackbar";
-import { ColorScheme } from "@/constants/Colors";
 
 const NOW_DATE = new Date().toISOString().split("T")[0];
 
@@ -29,6 +29,7 @@ const CalendarScreen = () => {
   const { theme } = useContext(ThemeContext);
   const user = auth().currentUser;
 
+  const [snapShot, setSnapShot] = useState<QuerySnapshot | null>(null);
   const [calendarServices, setCalendarServices] = useState<Service[] | []>([]);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -42,16 +43,19 @@ const CalendarScreen = () => {
   const [serviceBeginTime, setServiceBeginTime] = useState(new Date());
   const [serviceEndTime, setServiceEndTime] = useState(new Date());
 
-  const updateServices = () => {
-    console.log("Getting services");
-    getServices(user?.uid).then((services) => {
-      setCalendarServices(services as Service[]);
-    });
-  };
+  useEffect(() => {
+    const q = getServicesSnapshot(user?.uid);
+
+    const unsuscribe = onSnapshot(q, (querySnapshot) =>
+      setSnapShot(querySnapshot)
+    );
+
+    return () => unsuscribe();
+  }, []);
 
   useEffect(() => {
-    updateServices();
-  }, []);
+    setCalendarServices(snapShot?.docs.map((doc) => doc.data()) as Service[]);
+  }, [snapShot]);
 
   const cancelModal = () => {
     setModalVisible(false);
@@ -107,9 +111,6 @@ const CalendarScreen = () => {
       .then(() => {
         console.log("Service added!");
         setTimeout(() => showSnackbar("Service added!"), 1500);
-
-        // Update services
-        updateServices();
       })
       .catch((e: FirebaseError) => {
         console.log("Error at adding service!" + e.message);
@@ -304,7 +305,7 @@ const CalendarScreen = () => {
 
   const formatServices = (services: Service[]) => {
     let formattedServices: { [index: string]: Service[] } = {};
-    services.forEach((service) => {
+    services?.forEach((service) => {
       let date = service.beginTime.toDate().toISOString().split("T")[0];
 
       if (date in formattedServices) {
@@ -346,21 +347,6 @@ const CalendarScreen = () => {
 
   return (
     <SafeAreaView style={styles(theme).container}>
-      <Stack.Screen
-        options={{
-          headerRight: () => (
-            <Ionicons
-              name="refresh"
-              color={theme.primary}
-              size={28}
-              style={{ marginRight: 10 }}
-              onPress={() => {
-                updateServices();
-              }}
-            />
-          ),
-        }}
-      />
       <Agenda
         key={theme.primary}
         items={formatServices(calendarServices)}

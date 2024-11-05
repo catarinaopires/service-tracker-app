@@ -3,46 +3,36 @@ import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ColorScheme } from "@/constants/Colors";
 import ThemeContext from "@/context/ThemeContext";
-import { getUpcomingService } from "@/db/services";
+import { getUpcomingServiceSnapshot } from "@/db/services";
 import auth from "@react-native-firebase/auth";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { onSnapshot, QuerySnapshot } from "firebase/firestore";
+import { useContext, useEffect, useState } from "react";
 
-import { Image, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 
 const Home = () => {
   const { theme } = useContext(ThemeContext);
   const user = auth().currentUser;
 
+  const [snapShot, setSnapShot] = useState<QuerySnapshot | null>(null);
   const [upcomingService, setUpcomingService] = useState<Service | null>(null);
 
-  const [refreshing, setRefreshing] = useState(false);
+  useEffect(() => {
+    const q = getUpcomingServiceSnapshot(user?.uid);
 
-  const updateUpcomingService = () => {
-    console.log("Getting upcoming service");
-    getUpcomingService(user?.uid).then((service) => {
-      if (service.length === 0) {
-        setUpcomingService(null);
-        return;
-      }
-      setUpcomingService(service[0] as Service);
-      setRefreshing(false);
-    });
-  };
+    const unsuscribe = onSnapshot(q, (querySnapshot) =>
+      setSnapShot(querySnapshot)
+    );
+
+    return () => unsuscribe();
+  }, []);
 
   useEffect(() => {
-    updateUpcomingService();
-  }, []);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    updateUpcomingService();
-  }, []);
+    setUpcomingService(snapShot?.docs.map((doc) => doc.data())[0] as Service);
+  }, [snapShot]);
 
   return (
     <ParallaxScrollView
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
       headerBackgroundColor={theme.surfaceVariant}
       headerImage={
         <Image
