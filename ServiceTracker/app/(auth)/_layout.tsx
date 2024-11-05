@@ -1,26 +1,26 @@
-import { Colors } from "@/constants/Colors";
+import ThemeContext from "@/context/ThemeContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import auth from "@react-native-firebase/auth";
 import { Tabs } from "expo-router";
-import React from "react";
-import { StyleSheet, useColorScheme } from "react-native";
+import React, { useContext } from "react";
+import { StyleSheet } from "react-native";
 import Snackbar from "react-native-snackbar";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme() ?? "light";
+  const { theme } = useContext(ThemeContext);
 
   return (
     <Tabs
-      sceneContainerStyle={{ backgroundColor: Colors[colorScheme].background }}
+      sceneContainerStyle={{ backgroundColor: theme.background }}
       initialRouteName="home"
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme].primary,
-        tabBarInactiveTintColor: Colors[colorScheme].onSurfaceVariant,
-        tabBarActiveBackgroundColor: Colors[colorScheme].surfaceVariant,
-        tabBarInactiveBackgroundColor: Colors[colorScheme].surfaceVariant,
-        headerTintColor: Colors[colorScheme].onSurfaceVariant,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.onSurfaceVariant,
+        tabBarActiveBackgroundColor: theme.surfaceVariant,
+        tabBarInactiveBackgroundColor: theme.surfaceVariant,
+        headerTintColor: theme.onSurfaceVariant,
         headerStyle: {
-          backgroundColor: Colors[colorScheme].surfaceVariant,
+          backgroundColor: theme.surfaceVariant,
         },
       }}
     >
@@ -31,18 +31,18 @@ export default function TabLayout() {
           headerRight: () => (
             <Ionicons
               name="log-out-outline"
-              color={Colors[colorScheme].primary}
+              color={theme.primary}
               size={28}
               style={{ marginRight: 10 }}
               onPress={() => {
                 auth().signOut();
                 Snackbar.show({
                   text: "Signed out!",
-                  backgroundColor: Colors[colorScheme].inverseSurface,
-                  textColor: Colors[colorScheme].inverseOnSurface,
+                  backgroundColor: theme.inverseSurface,
+                  textColor: theme.inverseOnSurface,
                   action: {
                     text: "DISMISS",
-                    textColor: Colors[colorScheme].inversePrimary,
+                    textColor: theme.inversePrimary,
                     onPress: () => Snackbar.dismiss(),
                   },
                 });

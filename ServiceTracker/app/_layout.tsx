@@ -1,3 +1,4 @@
+import { ThemeProvider } from "@/context/ThemeContext";
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
@@ -43,10 +44,12 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }} >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="(auth)" />
-    </Stack>
+    <ThemeProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+      </Stack>
+    </ThemeProvider>
   );
 }
 

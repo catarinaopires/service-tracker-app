@@ -1,24 +1,23 @@
 import { AgendaItem, Service } from "@/components/AgendaItem";
-import { Colors } from "@/constants/Colors";
-import { addService, getServices } from "@/db/services";
+import { addService, getServicesSnapshot } from "@/db/services";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import auth from "@react-native-firebase/auth";
-import { Stack } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Modal from "react-native-modal";
 import DateTimePicker, { DateType } from "react-native-ui-datepicker";
 
+import { ColorScheme } from "@/constants/Colors";
+import ThemeContext from "@/context/ThemeContext";
 import dayjs from "dayjs";
 import { FirebaseError } from "firebase/app";
+import { onSnapshot, QuerySnapshot } from "firebase/firestore";
 import {
-  ColorSchemeName,
   Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  useColorScheme,
   View,
 } from "react-native";
 import { Agenda } from "react-native-calendars";
@@ -27,7 +26,10 @@ import Snackbar, { SnackbarAction } from "react-native-snackbar";
 const NOW_DATE = new Date().toISOString().split("T")[0];
 
 const CalendarScreen = () => {
-  const colorScheme: ColorSchemeName = useColorScheme() ?? "light";
+  const { theme } = useContext(ThemeContext);
+  const user = auth().currentUser;
+
+  const [snapShot, setSnapShot] = useState<QuerySnapshot | null>(null);
   const [calendarServices, setCalendarServices] = useState<Service[] | []>([]);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -41,18 +43,19 @@ const CalendarScreen = () => {
   const [serviceBeginTime, setServiceBeginTime] = useState(new Date());
   const [serviceEndTime, setServiceEndTime] = useState(new Date());
 
-  const user = auth().currentUser;
+  useEffect(() => {
+    const q = getServicesSnapshot(user?.uid);
 
-  const updateServices = () => {
-    console.log("Getting services");
-    getServices(user?.uid).then((services) => {
-      setCalendarServices(services as Service[]);
-    });
-  };
+    const unsuscribe = onSnapshot(q, (querySnapshot) =>
+      setSnapShot(querySnapshot)
+    );
+
+    return () => unsuscribe();
+  }, []);
 
   useEffect(() => {
-    updateServices();
-  }, []);
+    setCalendarServices(snapShot?.docs.map((doc) => doc.data()) as Service[]);
+  }, [snapShot]);
 
   const cancelModal = () => {
     setModalVisible(false);
@@ -72,16 +75,14 @@ const CalendarScreen = () => {
     return Snackbar.show({
       text: message,
       backgroundColor: isErrorMessage
-        ? Colors[colorScheme].errorContainer
-        : Colors[colorScheme].inverseSurface,
+        ? theme.errorContainer
+        : theme.inverseSurface,
       textColor: isErrorMessage
-        ? Colors[colorScheme].onErrorContainer
-        : Colors[colorScheme].inverseOnSurface,
+        ? theme.onErrorContainer
+        : theme.inverseOnSurface,
       action: action ?? {
         text: "DISMISS",
-        textColor: isErrorMessage
-          ? Colors[colorScheme].error
-          : Colors[colorScheme].inversePrimary,
+        textColor: isErrorMessage ? theme.error : theme.inversePrimary,
         onPress: () => Snackbar.dismiss(),
       },
     });
@@ -110,9 +111,6 @@ const CalendarScreen = () => {
       .then(() => {
         console.log("Service added!");
         setTimeout(() => showSnackbar("Service added!"), 1500);
-
-        // Update services
-        updateServices();
       })
       .catch((e: FirebaseError) => {
         console.log("Error at adding service!" + e.message);
@@ -135,7 +133,7 @@ const CalendarScreen = () => {
     return (
       <Modal
         isVisible={isVisible}
-        backdropColor={Colors[colorScheme].scrim}
+        backdropColor={theme.scrim}
         backdropOpacity={0.6}
         animationIn="zoomInDown"
         animationOut="zoomOutUp"
@@ -144,31 +142,31 @@ const CalendarScreen = () => {
         backdropTransitionInTiming={600}
         backdropTransitionOutTiming={600}
       >
-        <View style={styles(colorScheme).modalView}>
-          <Text style={styles(colorScheme).modalText}>{title}</Text>
+        <View style={styles(theme).modalView}>
+          <Text style={styles(theme).modalText}>{title}</Text>
           <DateTimePicker
             mode="single"
             timePicker={true}
             date={date}
             onChange={(params) => setDate(params.date as Date)}
-            headerTextStyle={{ color: Colors[colorScheme].primary }}
-            headerButtonColor={Colors[colorScheme].onSurfaceVariant}
-            calendarTextStyle={{ color: Colors[colorScheme].onSurfaceVariant }}
-            weekDaysTextStyle={{ color: Colors[colorScheme].onSurfaceVariant }}
-            selectedItemColor={Colors[colorScheme].primary}
+            headerTextStyle={{ color: theme.primary }}
+            headerButtonColor={theme.onSurfaceVariant}
+            calendarTextStyle={{ color: theme.onSurfaceVariant }}
+            weekDaysTextStyle={{ color: theme.onSurfaceVariant }}
+            selectedItemColor={theme.primary}
             timePickerTextStyle={{
-              color: Colors[colorScheme].onSurfaceVariant,
+              color: theme.onSurfaceVariant,
             }}
             timePickerIndicatorStyle={{
-              backgroundColor: Colors[colorScheme].primaryContainer,
+              backgroundColor: theme.primaryContainer,
             }}
           />
 
           <Pressable
-            style={styles(colorScheme).modalButton}
+            style={styles(theme).modalButton}
             onPress={() => setDatetimeModalVisible(false)}
           >
-            <Text style={styles(colorScheme).modalButtonText}>Save</Text>
+            <Text style={styles(theme).modalButtonText}>Save</Text>
           </Pressable>
         </View>
       </Modal>
@@ -179,7 +177,7 @@ const CalendarScreen = () => {
     return (
       <Modal
         isVisible={modalVisible}
-        backdropColor={Colors[colorScheme].scrim}
+        backdropColor={theme.scrim}
         backdropOpacity={0.6}
         animationIn="zoomInDown"
         animationOut="zoomOutUp"
@@ -188,44 +186,44 @@ const CalendarScreen = () => {
         backdropTransitionInTiming={600}
         backdropTransitionOutTiming={600}
       >
-        <View style={styles(colorScheme).modalView}>
-          <Text style={styles(colorScheme).modalText}>Add Service</Text>
+        <View style={styles(theme).modalView}>
+          <Text style={styles(theme).modalText}>Add Service</Text>
 
-          <Text style={styles(colorScheme).labelText}>Name</Text>
+          <Text style={styles(theme).labelText}>Name</Text>
 
-          <View style={styles(colorScheme).inputSection}>
+          <View style={styles(theme).inputSection}>
             <TextInput
-              style={styles(colorScheme).input}
+              style={styles(theme).input}
               value={serviceName}
               onChangeText={setServiceName}
               placeholder="Name"
-              placeholderTextColor={Colors[colorScheme].onSurface}
+              placeholderTextColor={theme.onSurface}
               autoCapitalize="none"
-              cursorColor={Colors[colorScheme].primary}
+              cursorColor={theme.primary}
             />
           </View>
 
-          <Text style={styles(colorScheme).labelText}>Place</Text>
+          <Text style={styles(theme).labelText}>Place</Text>
 
-          <View style={styles(colorScheme).inputSection}>
+          <View style={styles(theme).inputSection}>
             <TextInput
-              style={styles(colorScheme).input}
+              style={styles(theme).input}
               value={servicePlace}
               onChangeText={setServicePlace}
               placeholder="Place"
-              placeholderTextColor={Colors[colorScheme].onSurface}
+              placeholderTextColor={theme.onSurface}
               autoCapitalize="none"
-              cursorColor={Colors[colorScheme].primary}
+              cursorColor={theme.primary}
             />
           </View>
 
-          <Text style={[styles(colorScheme).labelText, { marginTop: 30 }]}>
+          <Text style={[styles(theme).labelText, { marginTop: 30 }]}>
             Schedule
           </Text>
           {/* Begin DateTime */}
           <View
             style={[
-              styles(colorScheme).inputSection,
+              styles(theme).inputSection,
               { flexDirection: "row", alignItems: "center" },
             ]}
           >
@@ -236,10 +234,10 @@ const CalendarScreen = () => {
               <Ionicons
                 name="time-outline"
                 size={20}
-                color={Colors[colorScheme].primary}
-                style={styles(colorScheme).inputIcon}
+                color={theme.primary}
+                style={styles(theme).inputIcon}
               />
-              <Text style={styles(colorScheme).input}>
+              <Text style={styles(theme).input}>
                 {serviceBeginTime
                   ? dayjs(serviceBeginTime).format("MMMM, DD, YYYY - HH:mm")
                   : "..."}
@@ -256,28 +254,21 @@ const CalendarScreen = () => {
               setServiceBeginTime
             )}
 
-          <Text style={{ color: Colors[colorScheme].inverseSurface }}>
-            until
-          </Text>
+          <Text style={{ color: theme.inverseSurface }}>until</Text>
 
           {/* End DateTime */}
-          <View
-            style={[
-              styles(colorScheme).inputSection,
-              styles(colorScheme).timeInput,
-            ]}
-          >
+          <View style={[styles(theme).inputSection, styles(theme).timeInput]}>
             <Pressable
-              style={styles(colorScheme).timeInput}
+              style={styles(theme).timeInput}
               onPress={() => setEndDatetimeModalVisible(true)}
             >
               <Ionicons
                 name="time-sharp"
                 size={20}
-                color={Colors[colorScheme].primary}
-                style={styles(colorScheme).inputIcon}
+                color={theme.primary}
+                style={styles(theme).inputIcon}
               />
-              <Text style={styles(colorScheme).input}>
+              <Text style={styles(theme).input}>
                 {serviceEndTime
                   ? dayjs(serviceEndTime).format("MMMM, DD, YYYY - HH:mm")
                   : "..."}
@@ -295,19 +286,16 @@ const CalendarScreen = () => {
             )}
 
           {/* Buttons */}
-          <View style={styles(colorScheme).modalButtonsView}>
-            <Pressable
-              style={styles(colorScheme).modalButton}
-              onPress={cancelModal}
-            >
-              <Text style={styles(colorScheme).modalButtonText}>Cancel</Text>
+          <View style={styles(theme).modalButtonsView}>
+            <Pressable style={styles(theme).modalButton} onPress={cancelModal}>
+              <Text style={styles(theme).modalButtonText}>Cancel</Text>
             </Pressable>
 
             <Pressable
-              style={styles(colorScheme).modalButton}
+              style={styles(theme).modalButton}
               onPress={addServiceToDB}
             >
-              <Text style={styles(colorScheme).modalButtonText}>Add</Text>
+              <Text style={styles(theme).modalButtonText}>Add</Text>
             </Pressable>
           </View>
         </View>
@@ -317,7 +305,7 @@ const CalendarScreen = () => {
 
   const formatServices = (services: Service[]) => {
     let formattedServices: { [index: string]: Service[] } = {};
-    services.forEach((service) => {
+    services?.forEach((service) => {
       let date = service.beginTime.toDate().toISOString().split("T")[0];
 
       if (date in formattedServices) {
@@ -338,52 +326,37 @@ const CalendarScreen = () => {
   const getAgendaTheme = () => {
     return {
       // Calendar
-      todayTextColor: Colors[colorScheme].primary,
-      dotColor: Colors[colorScheme].primary,
-      selectedDotColor: Colors[colorScheme].onPrimary,
-      selectedDayBackgroundColor: Colors[colorScheme].primary,
-      selectedDayTextColor: Colors[colorScheme].onPrimary,
-      calendarBackground: Colors[colorScheme].surfaceVariant,
-      dayTextColor: Colors[colorScheme].onSurfaceVariant,
-      textSectionTitleColor: Colors[colorScheme].outline, // Week
-      monthTextColor: Colors[colorScheme].onSurfaceVariant,
+      todayTextColor: theme.primary,
+      dotColor: theme.primary,
+      selectedDotColor: theme.onPrimary,
+      selectedDayBackgroundColor: theme.primary,
+      selectedDayTextColor: theme.onPrimary,
+      calendarBackground: theme.surfaceVariant,
+      dayTextColor: theme.onSurfaceVariant,
+      textSectionTitleColor: theme.outline, // Week
+      monthTextColor: theme.onSurfaceVariant,
 
       // Agenda
-      agendaDayTextColor: Colors[colorScheme].onBackground,
-      agendaDayNumColor: Colors[colorScheme].onBackground,
-      agendaTodayColor: Colors[colorScheme].primary,
-      agendaKnobColor: Colors[colorScheme].inversePrimary,
-      reservationsBackgroundColor: Colors[colorScheme].background,
+      agendaDayTextColor: theme.onBackground,
+      agendaDayNumColor: theme.onBackground,
+      agendaTodayColor: theme.primary,
+      agendaKnobColor: theme.inversePrimary,
+      reservationsBackgroundColor: theme.background,
     };
   };
 
   return (
-    <SafeAreaView style={styles(colorScheme).container}>
-      <Stack.Screen
-        options={{
-          headerRight: () => (
-            <Ionicons
-              name="refresh"
-              color={Colors[colorScheme].primary}
-              size={28}
-              style={{ marginRight: 10 }}
-              onPress={() => {
-                updateServices();
-              }}
-            />
-          ),
-        }}
-      />
+    <SafeAreaView style={styles(theme).container}>
       <Agenda
-        key={colorScheme}
+        key={theme.primary}
         items={formatServices(calendarServices)}
         renderItem={(item: Service) => (
           <AgendaItem item={item} inAgenda={false} />
         )}
         renderEmptyDate={() => <AgendaItem item={null} inAgenda={false} />}
         renderEmptyData={() => (
-          <View style={styles(colorScheme).emptyData}>
-            <Text style={{ color: Colors[colorScheme].onBackground }}>
+          <View style={styles(theme).emptyData}>
+            <Text style={{ color: theme.onBackground }}>
               No services for this day
             </Text>
           </View>
@@ -395,22 +368,16 @@ const CalendarScreen = () => {
       {modalVisible && showAddServiceModal()}
 
       <TouchableOpacity
-        style={styles(colorScheme).overlayIconButton}
+        style={styles(theme).overlayIconButton}
         onPress={() => setModalVisible(true)}
       >
-        <Ionicons
-          name="add"
-          size={40}
-          color={Colors[colorScheme].onSecondary}
-        />
+        <Ionicons name="add" size={40} color={theme.onSecondary} />
       </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
-const styles = (colorScheme: ColorSchemeName) => {
-  const scheme = colorScheme ?? "light";
-
+const styles = (theme: ColorScheme) => {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -421,14 +388,14 @@ const styles = (colorScheme: ColorSchemeName) => {
       paddingTop: 30,
     },
     emptyData: {
-      backgroundColor: Colors[scheme].background,
+      backgroundColor: theme.background,
       flex: 1,
       alignItems: "center",
       justifyContent: "center",
     },
     overlayIconButton: {
       borderWidth: 1,
-      borderColor: Colors[scheme].scrim,
+      borderColor: theme.scrim,
       alignItems: "center",
       justifyContent: "center",
       width: 70,
@@ -436,24 +403,24 @@ const styles = (colorScheme: ColorSchemeName) => {
       bottom: 10,
       right: 10,
       height: 70,
-      backgroundColor: Colors[scheme].secondary,
+      backgroundColor: theme.secondary,
       borderRadius: 100,
     },
     modalView: {
-      backgroundColor: Colors[scheme].inverseOnSurface,
+      backgroundColor: theme.inverseOnSurface,
       padding: 22,
       justifyContent: "center",
       alignItems: "center",
       borderRadius: 4,
-      borderColor: Colors[scheme].scrim,
+      borderColor: theme.scrim,
     },
     modalText: {
       fontSize: 20,
       marginBottom: 12,
-      color: Colors[scheme].inverseSurface,
+      color: theme.inverseSurface,
     },
     labelText: {
-      color: Colors[scheme].inverseSurface,
+      color: theme.inverseSurface,
       alignSelf: "flex-start",
       marginBottom: -5,
     },
@@ -465,34 +432,34 @@ const styles = (colorScheme: ColorSchemeName) => {
       width: "100%",
     },
     modalButton: {
-      backgroundColor: Colors[scheme].primary,
+      backgroundColor: theme.primary,
       borderRadius: 4,
       padding: 10,
       elevation: 2,
     },
     modalButtonText: {
-      color: Colors[scheme].onPrimary,
+      color: theme.onPrimary,
       fontWeight: "bold",
       textAlign: "center",
     },
     inputSection: {
       width: "100%",
-      backgroundColor: Colors[scheme].surfaceVariant,
+      backgroundColor: theme.surfaceVariant,
       borderRadius: 10,
       elevation: 10,
       marginVertical: 10,
       height: 50,
-      color: Colors[scheme].primary,
+      color: theme.primary,
     },
     input: {
       flex: 1,
       marginHorizontal: 10,
-      color: Colors[scheme].onSurfaceVariant,
+      color: theme.onSurfaceVariant,
     },
     inputIcon: {
       marginLeft: 10,
       marginRight: 5,
-      color: Colors[scheme].onSurfaceVariant,
+      color: theme.onSurfaceVariant,
     },
     timeInput: {
       flexDirection: "row",
