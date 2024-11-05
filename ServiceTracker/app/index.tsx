@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   ActivityIndicator,
-  ColorSchemeName,
   Image,
   KeyboardAvoidingView,
   Pressable,
@@ -9,24 +8,24 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  useColorScheme,
-  View
+  View,
 } from "react-native";
 
 import Snackbar, { SnackbarAction } from "react-native-snackbar";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-import { Colors } from "@/constants/Colors";
+import { ColorScheme } from "@/constants/Colors";
+import ThemeContext from "@/context/ThemeContext";
 import { FirebaseError } from "@firebase/app";
 import auth from "@react-native-firebase/auth";
 
 export default function Index() {
+  const { theme } = useContext(ThemeContext);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const colorScheme: ColorSchemeName = useColorScheme() ?? "light";
 
   const showSnackbar = (
     message: string,
@@ -36,16 +35,14 @@ export default function Index() {
     return Snackbar.show({
       text: message,
       backgroundColor: isErrorMessage
-        ? Colors[colorScheme].errorContainer
-        : Colors[colorScheme].inverseSurface,
+        ? theme.errorContainer
+        : theme.inverseSurface,
       textColor: isErrorMessage
-        ? Colors[colorScheme].onErrorContainer
-        : Colors[colorScheme].inverseOnSurface,
+        ? theme.onErrorContainer
+        : theme.inverseOnSurface,
       action: action ?? {
         text: "DISMISS",
-        textColor: isErrorMessage
-          ? Colors[colorScheme].error
-          : Colors[colorScheme].inversePrimary,
+        textColor: isErrorMessage ? theme.error : theme.inversePrimary,
         onPress: () => Snackbar.dismiss(),
       },
     });
@@ -105,73 +102,73 @@ export default function Index() {
 
   return (
     <ScrollView
-      style={styles(colorScheme).container}
+      style={styles(theme).container}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles(colorScheme).backgroundLogo}>
+      <View style={styles(theme).backgroundLogo}>
         <Image
           source={require("../assets/images/logo.png")}
-          style={styles(colorScheme).logoImage}
+          style={styles(theme).logoImage}
         />
       </View>
 
-      <View style={styles(colorScheme).bottomView}>
-        <Text style={styles(colorScheme).title}>Welcome!</Text>
+      <View style={styles(theme).bottomView}>
+        <Text style={styles(theme).title}>Welcome!</Text>
 
-        <View style={styles(colorScheme).bottomViewContent}>
+        <View style={styles(theme).bottomViewContent}>
           <KeyboardAvoidingView behavior="padding">
             {/* Input form fields */}
-            <View style={styles(colorScheme).inputSection}>
+            <View style={styles(theme).inputSection}>
               <Ionicons
                 name="person"
                 size={20}
-                style={styles(colorScheme).inputIcon}
+                style={styles(theme).inputIcon}
               />
               <TextInput
-                style={styles(colorScheme).input}
+                style={styles(theme).input}
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Email"
-                placeholderTextColor={Colors[colorScheme].onSurface}
+                placeholderTextColor={theme.onSurface}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                cursorColor={Colors[colorScheme].primaryContainer}
+                cursorColor={theme.primaryContainer}
               />
             </View>
 
-            <View style={styles(colorScheme).inputSection}>
+            <View style={styles(theme).inputSection}>
               <Ionicons
                 name="lock-closed"
                 size={20}
-                style={styles(colorScheme).inputIcon}
+                style={styles(theme).inputIcon}
               />
               <TextInput
-                style={styles(colorScheme).input}
+                style={styles(theme).input}
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Password"
-                placeholderTextColor={Colors[colorScheme].onSurface}
+                placeholderTextColor={theme.onSurface}
                 secureTextEntry
-                cursorColor={Colors[colorScheme].primaryContainer}
+                cursorColor={theme.primaryContainer}
               />
             </View>
 
             {/* Buttons */}
-            <View style={styles(colorScheme).bottomViewContent}>
+            <View style={styles(theme).bottomViewContent}>
               <Pressable
-                style={styles(colorScheme).button}
+                style={styles(theme).button}
                 onPress={signIn}
                 disabled={loading}
               >
-                <Text style={styles(colorScheme).buttonText}>Sign In</Text>
+                <Text style={styles(theme).buttonText}>Sign In</Text>
               </Pressable>
 
               <Pressable
-                style={styles(colorScheme).button}
+                style={styles(theme).button}
                 onPress={signUp}
                 disabled={loading}
               >
-                <Text style={styles(colorScheme).buttonText}>Sign Up</Text>
+                <Text style={styles(theme).buttonText}>Sign Up</Text>
               </Pressable>
             </View>
 
@@ -185,23 +182,21 @@ export default function Index() {
   );
 }
 
-const styles = (colorScheme: ColorSchemeName) => {
-  const scheme = colorScheme ?? "light";
-
+const styles = (theme: ColorScheme) => {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: Colors[scheme].background,
+      backgroundColor: theme.background,
     },
     title: {
       fontSize: 34,
       fontWeight: "bold",
       lineHeight: 32,
       alignSelf: "center",
-      color: Colors[scheme].onBackground,
+      color: theme.onBackground,
     },
     backgroundLogo: {
-      backgroundColor: Colors[scheme].primaryContainer,
+      backgroundColor: theme.primaryContainer,
     },
     logoImage: {
       width: 200,
@@ -212,7 +207,7 @@ const styles = (colorScheme: ColorSchemeName) => {
     bottomView: {
       flex: 1.5,
       marginTop: -40,
-      backgroundColor: Colors[scheme].background,
+      backgroundColor: theme.background,
       bottom: 20,
       borderTopStartRadius: 60,
       borderTopEndRadius: 60,
@@ -224,22 +219,22 @@ const styles = (colorScheme: ColorSchemeName) => {
     inputSection: {
       flex: 1,
       flexDirection: "row",
-      backgroundColor: Colors[scheme].surfaceVariant,
+      backgroundColor: theme.surfaceVariant,
       borderRadius: 10,
       elevation: 10,
       marginVertical: 10,
       alignItems: "center",
       height: 50,
-      color: Colors[scheme].onSurfaceVariant,
+      color: theme.onSurfaceVariant,
     },
     inputIcon: {
       marginLeft: 10,
       marginRight: 5,
-      color: Colors[scheme].onSurfaceVariant,
+      color: theme.onSurfaceVariant,
     },
     input: {
       flex: 1,
-      color: Colors[scheme].onSurfaceVariant,
+      color: theme.onSurfaceVariant,
     },
     button: {
       marginTop: 15,
@@ -250,15 +245,15 @@ const styles = (colorScheme: ColorSchemeName) => {
       alignItems: "center",
       alignSelf: "stretch",
       elevation: 3,
-      backgroundColor: Colors[scheme].primaryContainer,
-      color: Colors[scheme].onPrimaryContainer,
+      backgroundColor: theme.primaryContainer,
+      color: theme.onPrimaryContainer,
     },
     buttonText: {
       fontSize: 16,
       lineHeight: 21,
       fontWeight: "bold",
       letterSpacing: 0.25,
-      color: Colors[scheme].onSurface,
+      color: theme.onSurface,
     },
   });
 };

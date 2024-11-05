@@ -1,28 +1,21 @@
 import { AgendaItem, Service } from "@/components/AgendaItem";
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { Colors } from "@/constants/Colors";
+import { ColorScheme } from "@/constants/Colors";
+import ThemeContext from "@/context/ThemeContext";
 import { getUpcomingService } from "@/db/services";
 import auth from "@react-native-firebase/auth";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 
-import {
-  ColorSchemeName,
-  Image,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from "react-native";
+import { Image, RefreshControl, StyleSheet, Text, View } from "react-native";
 
 const Home = () => {
-  const colorScheme: ColorSchemeName = useColorScheme() ?? "light";
+  const { theme } = useContext(ThemeContext);
+  const user = auth().currentUser;
+
   const [upcomingService, setUpcomingService] = useState<Service | null>(null);
 
   const [refreshing, setRefreshing] = useState(false);
-
-  const user = auth().currentUser;
 
   const updateUpcomingService = () => {
     console.log("Getting upcoming service");
@@ -50,22 +43,22 @@ const Home = () => {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      headerBackgroundColor={Colors[colorScheme].surfaceVariant}
+      headerBackgroundColor={theme.surfaceVariant}
       headerImage={
         <Image
           source={require("../../assets/images/logo.png")}
-          style={styles(colorScheme).logoImage}
+          style={styles(theme).logoImage}
         />
       }
     >
-      <View style={styles(colorScheme).titleContainer}>
-        <Text style={styles(colorScheme).title}>Welcome {user?.email}!</Text>
+      <View style={styles(theme).titleContainer}>
+        <Text style={styles(theme).title}>Welcome {user?.email}!</Text>
         <HelloWave />
       </View>
 
       {/* Upcoming service */}
-      <View style={styles(colorScheme).stepContainer}>
-        <Text style={styles(colorScheme).subtitle}>Upcoming service:</Text>
+      <View style={styles(theme).stepContainer}>
+        <Text style={styles(theme).subtitle}>Upcoming service:</Text>
 
         <AgendaItem item={upcomingService} inAgenda={false} />
       </View>
@@ -73,26 +66,24 @@ const Home = () => {
   );
 };
 
-const styles = (colorScheme: ColorSchemeName) => {
-  const scheme = colorScheme ?? "light";
-
+const styles = (theme: ColorScheme) => {
   return StyleSheet.create({
     container: {
-      backgroundColor: Colors[scheme].background,
+      backgroundColor: theme.background,
     },
     title: {
       fontSize: 32,
       fontWeight: "bold",
       lineHeight: 32,
-      color: Colors[scheme].onBackground,
+      color: theme.onBackground,
     },
     subtitle: {
       fontSize: 20,
       fontWeight: "bold",
-      color: Colors[scheme].onBackground,
+      color: theme.onBackground,
     },
     backgroundLogo: {
-      backgroundColor: Colors[scheme].primaryContainer,
+      backgroundColor: theme.primaryContainer,
     },
     logoImage: {
       width: 150,
