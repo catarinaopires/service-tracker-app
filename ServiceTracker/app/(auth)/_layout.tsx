@@ -1,4 +1,3 @@
-import { Colors } from "@/constants/Colors";
 import ThemeContext from "@/context/ThemeContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import auth from "@react-native-firebase/auth";
